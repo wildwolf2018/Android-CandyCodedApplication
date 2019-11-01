@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 
 public class InfoActivity extends AppCompatActivity {
     public static final String LOCATION_URL_PREFIX = "https://www.google.com/maps/search/?api=1&query=";
+    public static final String CHOOSE_APP = "Choose App";
     private TextView geoLocationView;
     private TextView phoneNumberView;
 
@@ -83,7 +84,7 @@ public class InfoActivity extends AppCompatActivity {
         //Query for the number of activities that can handle this intent
         List<ResolveInfo> activitiesList = packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL);
         if (activitiesList.size() > 1) {
-            Intent chooser = Intent.createChooser(intent, getResources().getString(R.string.map_chooser));
+            Intent chooser = Intent.createChooser(intent, CHOOSE_APP);
             context.startActivity(chooser);
         }
         else if(intent.resolveActivity(packageManager) != null){
@@ -103,4 +104,23 @@ public class InfoActivity extends AppCompatActivity {
     // ***
     // TODO - Task 3 - Launch the Phone Activity
     // ***
+
+    //Launches a phone activity with specified phone number
+    private void makePhoneCall(){
+        String phoneNumber = phoneNumberView.getText().toString();
+
+        //Regular expression to match GPS coordinates or specific address
+        String pattern = "^[+]?[(]?[0-9]{1,4}[)]?[-{0,1}\\s?\\d]*$";
+        boolean isValid = validExp(phoneNumber, pattern);
+
+        if(isValid){
+            // Launch the Phone Activity
+            Uri locUri = Uri.parse("tel:" + phoneNumber);
+            Intent locationIntent = new Intent(Intent.ACTION_VIEW);
+            locationIntent.setData(locUri);
+            launchActivity(this, locationIntent);
+        } else{
+            Toast.makeText(this, "Invalid phone number", Toast.LENGTH_SHORT).show();
+        }
+    }
 }
