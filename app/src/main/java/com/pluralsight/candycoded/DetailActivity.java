@@ -1,12 +1,16 @@
 package com.pluralsight.candycoded;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -15,10 +19,13 @@ import com.pluralsight.candycoded.DB.CandyContract.CandyEntry;
 import com.pluralsight.candycoded.DB.CandyDbHelper;
 import com.squareup.picasso.Picasso;
 
+import java.util.List;
+
 public class DetailActivity extends AppCompatActivity {
 
     public static final String SHARE_DESCRIPTION = "Look at this delicious candy from Candy Coded - ";
     public static final String HASHTAG_CANDYCODED = " #candycoded";
+    public static final String CHOOSE_APP = "Choose App";
     String mCandyImageUrl = "";
 
     @Override
@@ -71,4 +78,33 @@ public class DetailActivity extends AppCompatActivity {
     // ***
     // TODO - Task 4 - Share the Current Candy with an Intent
     // ***
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemID = item.getItemId();
+        //Share the Current Candy with an Intent
+        if(itemID == R.id.share_detail){
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.putExtra(Intent.EXTRA_TEXT,  SHARE_DESCRIPTION  + mCandyImageUrl + HASHTAG_CANDYCODED);
+            shareIntent.setType("text/plain");
+            launchActivity(getApplicationContext(), shareIntent);
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
+    //Launches an activity using an implicit intent
+    private void launchActivity(Context context, Intent intent){
+        PackageManager packageManager = context.getPackageManager();
+        //Query for the number of activities that can handle this intent
+        List<ResolveInfo> activitiesList = packageManager.queryIntentActivities(intent, PackageManager.MATCH_ALL);
+        if (activitiesList.size() > 1) {
+            Intent chooser = Intent.createChooser(intent, CHOOSE_APP);
+            context.startActivity(chooser);
+        }
+        else if(intent.resolveActivity(packageManager) != null){
+            //Launch default app or activity if there's only single app that can handle intent
+            context.startActivity(intent);
+        }
+    }
 }
